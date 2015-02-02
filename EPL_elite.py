@@ -439,7 +439,6 @@ class FantasyEPLController(object):
                                          "USER=root;PASSWORD=admin;OPTION=67108864;")
             default_db = DbSaver(self.game_week, default_connection_string, self.season)
             self.storage_handlers.append(default_db)
-        print(self.storage_handlers)
 
     def _process_standings_page(self, links):
         for link in links:
@@ -491,8 +490,8 @@ if __name__ == '__main__':
     my_sql_connection_string = ("DRIVER={MySQL ODBC 5.3 Unicode Driver};SERVER=localhost;DATABASE=epl;"
                                 "USER=root;PASSWORD=admin;OPTION=67108864;")
     epl = FantasyEPLController()
-    epl.download_manager_stats(1, 5000)
-
+    # epl.download_manager_stats(1, 5000)
+    epl.download_player_stats()
 
     # TODO: - better logging, docstrings, refactoring
 
