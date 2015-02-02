@@ -36,7 +36,7 @@ class WebRequest(IRequest):
                 sleep(300)
                 print("retrying...")
                 self.get_data(retry_limit - 1)
-            elif retry_limit:
+            elif retry_limit == 0:
                 raise error
             else:
                 print("retrying in 5 minutes")
