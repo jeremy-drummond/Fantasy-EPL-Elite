@@ -1,0 +1,12 @@
+﻿- Microsoft® ODBC Driver 11 for SQL Server® - Windows
+    found at: http://www.microsoft.com/en-us/download/details.aspx?id=36434
+
+- MySQL ODBC Driver
+    found at: http://dev.mysql.com/downloads/connector/odbc/
+
+- pypyodbc
+    found at: https://code.google.com/p/pypyodbc/
+
+- requests
+
+- BeautifulSoup
