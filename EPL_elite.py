@@ -372,21 +372,14 @@ class DbSaver(object):
 
 class FantasyEPLController(object):
     def __init__(self, *connection_strings, league_id=313, season=1415):
-        self.web = WebRequest('http://fantasy.premierleague.com/my-leagues/{0}/standings/?ls-page=1'.format(league_id))
         self.league_id = league_id
-        standings_html = self.web.get_data()
-        self.standings_scraper = StandingsScraper(standings_html)
-        first_link = self.standings_scraper.scrape_standings_relative_links()[0]
-        self.entry_scraper = EntryScraper(first_link)
+        self.season = season
+        self.web = WebRequest('http://fantasy.premierleague.com/my-leagues/{0}/standings/?ls-page=1'.format(league_id))
         self.link_parser = LinkParser()
-        self.game_week = self.link_parser.extract_gameweek(first_link)
-        self.storage_handlers = []
-        if connection_strings:
-            for connection_string in connection_strings:
-                handler = DbSaver(self.game_week, connection_string, season)
-                self.storage_handlers.append(handler)
-        else:
-            self.storage_handlers.append(DbSaver())
+        self.entry_scraper = EntryScraper("")
+        self.standings_scraper = StandingsScraper("")
+        self.game_week = self._get_current_game_week()
+        self._initialise_storage_handlers(*connection_strings)
 
     def download_player_stats(self):
         player_id = 1
@@ -424,6 +417,29 @@ class FantasyEPLController(object):
             self._process_standings_page(links)
             print("Page {0} added.".format(standings_page_index))
             standings_page_index += 1
+
+    def _get_current_game_week(self):
+            self.web.set_url(('http://fantasy.premierleague.com/my-leagues/{0}/standings'
+                              '/?ls-page=1').format(self.league_id))
+            standings_html = self.web.get_data()
+            self.standings_scraper.set_source_data(standings_html)
+            FIRST_LINK_INDEX = 0
+            first_link = self.standings_scraper.scrape_standings_relative_links()[FIRST_LINK_INDEX]
+            self.entry_scraper.set_source_data(first_link)
+            return self.link_parser.extract_gameweek(first_link)
+
+    def _initialise_storage_handlers(self, *connection_strings):
+        self.storage_handlers = []
+        if connection_strings:
+            for connection_string in connection_strings:
+                handler = DbSaver(self.game_week, connection_string, self.season)
+                self.storage_handlers.append(handler)
+        else:
+            default_connection_string = ("DRIVER={MySQL ODBC 5.3 Unicode Driver};SERVER=localhost;DATABASE=epl;"
+                                         "USER=root;PASSWORD=admin;OPTION=67108864;")
+            default_db = DbSaver(self.game_week, default_connection_string, self.season)
+            self.storage_handlers.append(default_db)
+        print(self.storage_handlers)
 
     def _process_standings_page(self, links):
         for link in links:
@@ -467,14 +483,14 @@ class FantasyEPLController(object):
 
 
 if __name__ == '__main__':
-    my_sql_connection_string = ("DRIVER={MySQL ODBC 5.3 Unicode Driver};SERVER=localhost;DATABASE=epl;USER=root;"
-                                "PASSWORD=admin;OPTION=67108864;")
-
-    # azure_connection_string = ("Driver={SQL Server Native Client 11.0};Server=tcp:txdy2atl0i.database.windows.net,1433;"
+    # azure_connection_string = ("Driver={SQL Server Native Client 11.0};
+    #                            "Server=tcp:txdy2atl0i.database.windows.net,1433;"
     #                            "Database=EPL;Uid=********@txdy2atl0i;Pwd=*******;Encrypt=yes;"
     #                            "Connection Timeout=30;")
 
-    epl = FantasyEPLController(my_sql_connection_string)
+    my_sql_connection_string = ("DRIVER={MySQL ODBC 5.3 Unicode Driver};SERVER=localhost;DATABASE=epl;"
+                                "USER=root;PASSWORD=admin;OPTION=67108864;")
+    epl = FantasyEPLController()
     epl.download_manager_stats(1, 5000)
 
 
