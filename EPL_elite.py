@@ -28,6 +28,8 @@ class WebRequest(IRequest):
                 raise HTTPError(response.status_code)
             return response.text
         except RequestException as error:
+            if type(error) == HTTPError:
+                raise error
             print("/n/n/nConnection timeout.")
             print("Timeout occurred on link: {0}".format(self._url))
             if retry_limit and retry_limit > 0:
@@ -257,7 +259,7 @@ class Player(object):
     def __str__(self):
         return self.name
 
-    __repr__ = __str__
+
 
 
 class PlayerStats(object):
@@ -316,19 +318,26 @@ class DbSaver(object):
 
         for key, value in player_stats.attributes_dict.items():
             field_names.append(key)
-            if value is False or None:
+            if value is False or value is None:
                 value = 0
             if value is True:
                 value = 1
             values.append(value)
+        field_names += ["game_week", "season"]
 
-        sql = "insert into Player(" + ', '.join(field_names) + ", game_week, season) values ("
+        sql = "insert into Player({0}) values (".format(', '.join(field_names))
         for value in values:
             if type(value) == str:
-                sql += "'" + value.replace("'", "''") + "', "
+                sql += "'{0}',".format(value.replace("'", "''"))
             else:
-                sql += str(value) + ", "
-        sql += str(self.game_week) + ", " + str(self.season) + "); "
+                sql += "{0}, ".format(value)
+        sql += "{0}, {1})".format(self.game_week, self.season)
+
+        sql += "ON DUPLICATE KEY UPDATE "
+        LAST_FIELD = -1
+        for field in field_names[:LAST_FIELD]:
+            sql += "{0}=VALUES({0}),".format(field)
+        sql += "{0}=VALUES({0});".format(field_names[LAST_FIELD])
         self.sql_statements += sql.replace('""', 'null')
 
     def add_game_week_team(self, team, manager_id):
