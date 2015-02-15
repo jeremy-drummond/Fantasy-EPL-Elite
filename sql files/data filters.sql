@@ -4,15 +4,16 @@ use epl;
 select (count(position.id)  / (select count(*) / 15 from position)) * 100 as 'elite_util' , web_name, selected_by_percent, now_cost, total_points
 from position, player, gameweekteam 
 where player.id = position.id
-and gameweekteam.game_week = 23 
+and gameweekteam.game_week = 24 
 and gameweekteam.gameWeekTeamID = position.gameWeekTeamID
 and element_type = 2
-and now_cost < 54
+and started = true
+and now_cost < 51
 group by position.id
 order by elite_util desc, now_cost desc;
 
 -- average player cost by area of team for top players
-select avg(now_cost) / 10  as average_gk from player, position where player.id = position.id and element_type = 4;
+select avg(now_cost) / 10  as 'average value' from player, position where player.id = position.id and element_type = 3;
 
 -- most captained
 select count(captainID) as captained, web_name from gameweekteam, player 
