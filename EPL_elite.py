@@ -232,23 +232,6 @@ class GameWeekTeam(object):
     def set_vice_captain(self, vice_captain_index):
         self.vice_captain = self.players[vice_captain_index]
 
-    def get_starting_players(self):
-        return self.players[0:11]
-
-    def get_substitute_players(self):
-        return self.players[11:15]
-
-    def get_players_by_position(self, position, players=None):
-        """Goalkeeper = 1, Defender = 2, Midfielder = 3, Forward = 4. As extracted from source data."""
-        if not players:
-            players = self.players
-        starting_players = []
-        for player in players:
-            if player.position == position:
-                starting_players.append(player)
-        return starting_players
-
-
 class Player(object):
     def __init__(self):
         self.name = ""
@@ -499,7 +482,7 @@ if __name__ == '__main__':
     my_sql_connection_string = ("DRIVER={MySQL ODBC 5.3 Unicode Driver};SERVER=localhost;DATABASE=epl;"
                                 "USER=root;PASSWORD=admin;OPTION=67108864;")
     epl = FantasyEPLController()
-    # epl.download_manager_stats(1, 5000)
+    # epl.download_manager_stats(1, 10000)
     epl.download_player_stats()
 
     # TODO: - better logging, docstrings, refactoring
