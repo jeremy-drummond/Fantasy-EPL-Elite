@@ -1,8 +1,8 @@
-drop database epl;
 
-create database epl;
 
-use epl;
+create database epl_15_16;
+
+use epl_15_16;
 
 create table Manager
 (

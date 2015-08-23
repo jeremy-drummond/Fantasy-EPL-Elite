@@ -30,21 +30,21 @@ class WebRequest(IRequest):
         except RequestException as error:
             if type(error) == HTTPError:
                 raise error
-            print("/n/n/nConnection timeout.")
+            print("Connection timeout.")
             print("Timeout occurred on link: {0}".format(self._url))
             if retry_limit and retry_limit > 0:
                 print("{0} retries remaining".format(retry_limit))
                 print("retrying again in 5 minutes")
                 sleep(300)
                 print("retrying...")
-                self.get_data(retry_limit - 1)
+                return self.get_data(retry_limit - 1)
             elif retry_limit == 0:
                 raise error
             else:
                 print("retrying in 5 minutes")
                 sleep(300)
                 print("retrying...")
-                self.get_data()
+                return self.get_data()
 
     def save_request(self, filename, request_data, encoding='UTF-8'):
         with open(filename, "w", encoding=encoding) as file:
@@ -77,7 +77,6 @@ class LinkParser(object):
 class Scraper(object):
     def __init__(self, data):
         self.set_source_data(data)
-
 
     def set_source_data(self, data):
         self.parser = BeautifulSoup(data)
@@ -243,8 +242,6 @@ class Player(object):
         return self.name
 
 
-
-
 class PlayerStats(object):
     def __init__(self, json_string):
         self.attributes_dict = json.loads(json_string)
@@ -399,7 +396,7 @@ class FantasyEPLController(object):
                                                                                     standings_page_total,
                                                                                     total_records))
         while standings_page_index <= standings_page_total:
-            sleep(1)
+            # sleep(1)
             url = 'http://fantasy.premierleague.com/my-leagues/{0}/standings/?ls-page={1}'.format(self.league_id,
                                                                                                   standings_page_index)
             print("Processing page {0}.".format(standings_page_index))
@@ -427,14 +424,14 @@ class FantasyEPLController(object):
                 handler = DbSaver(self.game_week, connection_string, self.season)
                 self.storage_handlers.append(handler)
         else:
-            default_connection_string = ("DRIVER={MySQL ODBC 5.3 Unicode Driver};SERVER=localhost;DATABASE=epl;"
+            default_connection_string = ("DRIVER={MySQL ODBC 5.3 Unicode Driver};SERVER=localhost;DATABASE=epl_15_16;"
                                          "USER=root;PASSWORD=admin;OPTION=67108864;")
             default_db = DbSaver(self.game_week, default_connection_string, self.season)
             self.storage_handlers.append(default_db)
 
     def _process_standings_page(self, links):
         for link in links:
-            sleep(1)
+            # sleep(1)
             url = 'http://fantasy.premierleague.com' + link
             self.web.set_url(url)
             self.entry_scraper.set_source_data(self.web.get_data())
@@ -474,16 +471,17 @@ class FantasyEPLController(object):
 
 
 if __name__ == '__main__':
+    epl = FantasyEPLController()
+    epl.download_player_stats()
+    epl.download_manager_stats(1, 10000)
+
+    # TODO: - better logging, docstrings, refactoring
+
+	#Connections
     # azure_connection_string = ("Driver={SQL Server Native Client 11.0};
     #                            "Server=tcp:txdy2atl0i.database.windows.net,1433;"
     #                            "Database=EPL;Uid=********@txdy2atl0i;Pwd=*******;Encrypt=yes;"
     #                            "Connection Timeout=30;")
 
-    my_sql_connection_string = ("DRIVER={MySQL ODBC 5.3 Unicode Driver};SERVER=localhost;DATABASE=epl;"
-                                "USER=root;PASSWORD=admin;OPTION=67108864;")
-    epl = FantasyEPLController()
-    # epl.download_manager_stats(1, 10000)
-    epl.download_player_stats()
-
-    # TODO: - better logging, docstrings, refactoring
-
+    # my_sql_connection_string = ("DRIVER={MySQL ODBC 5.3 Unicode Driver};SERVER=localhost;DATABASE=epl;"
+    #                            "USER=root;PASSWORD=admin;OPTION=67108864;")

@@ -1,0 +1,24 @@
+class A (object):
+    pass
+
+def get_data(retry_limit=None):
+        try:
+            response = A()
+            response.status_code = 21
+            if response.status_code != 200:
+                raise Exception("I'm an ERROR")
+            return response
+        except Exception as error:
+            if type(error) == NotImplementedError:
+                raise error
+
+            if retry_limit and retry_limit > 0:
+
+                get_data(retry_limit - 1)
+            elif retry_limit == 0:
+
+            else:
+
+                get_data()
+
+get_data(0)
